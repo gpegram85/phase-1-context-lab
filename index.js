@@ -16,8 +16,91 @@ const allWagesFor = function () {
 
     const payable = eligibleDates.reduce(function (memo, d) {
         return memo + wagesEarnedOnDate.call(this, d)
-    }.bind(this), 0) // <== Hm, why did we need to add bind() there? We'll discuss soon!
+    }.bind(this), 0)
 
     return payable
 }
 
+function createEmployeeRecord(array) {
+    const [firstName, familyName, title, payPerHour] = array
+    return {
+                firstName,
+                familyName,
+                title,
+                payPerHour,
+                timeInEvents: [],
+                timeOutEvents: []
+            }
+}
+
+function createEmployeeRecords(array) {
+
+    const employeeRecords = []
+
+    array.forEach(employee => {
+        employeeRecords.push(createEmployeeRecord(employee))
+    });
+
+    return employeeRecords
+}
+
+function createTimeInEvent(date) {
+
+    const clockIn = {
+        type: "TimeIn",
+        hour: parseInt(date.slice(11, 15)),
+        date: date.slice(0, 10)
+    }
+
+    this.timeInEvents.push(clockIn)
+    return this
+}
+
+function createTimeOutEvent(date) {
+
+    const clockOut = {
+        type: "TimeOut",
+        hour: parseInt(date.slice(11, 15)),
+        date: date.slice(0, 10)
+    }
+
+    this.timeOutEvents.push(clockOut)
+    return this
+}
+
+function hoursWorkedOnDate(date) {
+
+    const timeIn = this.timeInEvents.find(event => event.date === date)
+    const timeOut = this.timeOutEvents.find(event => event.date === date)
+
+    const timeOutHour = parseInt(timeOut.hour) 
+    const timeInHour = parseInt(timeIn.hour)
+
+    let hoursWorked = (timeOutHour - timeInHour) / 100
+
+    return hoursWorked
+}
+
+function wagesEarnedOnDate(date) {
+    
+    const hoursToBePaid = hoursWorkedOnDate.call(this, date)
+    const wagesEarned = hoursToBePaid * this.payPerHour
+    
+    return wagesEarned
+}
+
+function findEmployeeByFirstName(srcArray, firstNameString) {
+
+    return srcArray.find(emp => emp.firstName === firstNameString)
+}
+
+function calculatePayroll(array) {
+
+    let payrollTotal = 0
+
+    array.forEach(emp => {
+        payrollTotal += allWagesFor.call(emp)
+    })
+
+    return payrollTotal
+}
